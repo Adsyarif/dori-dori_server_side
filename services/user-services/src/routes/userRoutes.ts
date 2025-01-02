@@ -1,23 +1,9 @@
 import express from "express";
-import {
-  registerUser,
-  loginUser,
-  getAllUsers,
-} from "../controllers/userController";
-import { checkRole } from "../middleware/checkRole";
-import { UserRole } from "../models/User";
-import { authenticate } from "../middleware/authenticate";
+import { registerUser } from "../controllers/userController";
 import asyncHandler from "../utils/asyncHandler";
 
-const router = express.Router();
+const userRouter = express.Router();
 
-router.post("/uc/v1/register", asyncHandler(registerUser));
-// router.post("/login", asyncHandler(loginUser));
-// router.get(
-//   "/users",
-//   authenticate,
-//   checkRole([UserRole.Admin]),
-//   asyncHandler(getAllUsers)
-// );
+userRouter.post("/uc/v1/register", asyncHandler(registerUser));
 
-export default router;
+export default userRouter;
