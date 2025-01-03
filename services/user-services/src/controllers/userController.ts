@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { User, IUser, UserRole } from "../models/User";
 import bcrypt from "bcryptjs";
+import { promises } from "dns";
 
 // Register a new user
 export const registerUser = async (
@@ -51,13 +52,11 @@ export const loginUser = async (
   const { email, password } = req.body;
 
   try {
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -81,24 +80,42 @@ export const loginUser = async (
   }
 };
 
-// // Get all users (for admin only)
-// export const getAllUsers = async (
-//   req: Request,
-//   res: Response
-// ): Promise<Response> => {
-//   try {
-//     // Pastikan req.user ada dan memiliki role
-//     if (!req.user || req.user.role !== UserRole.Admin) {
-//       return res.status(403).json({ message: "Forbidden access" });
-//     }
+// Get all users (for admin only)
+export const getAllUsers = async (
+  req: Request & { user?: { role: UserRole } },
+  res: Response
+): Promise<Response> => {
+  try {
+    if (!req.user || req.user.role !== UserRole.Admin) {
+      return res.status(403).json({ message: "Forbidden access" });
+    }
 
-//     const users = await User.find();
-//     return res.status(200).json(users);
-//   } catch (error: unknown) {
-//     const errMessage =
-//       error instanceof Error ? error.message : "Unknown error occurred";
-//     return res
-//       .status(500)
-//       .json({ message: "Error fetching users", error: errMessage });
-//   }
-// };
+    const users = await User.find();
+    return res.status(200).json(users);
+  } catch (error: unknown) {
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    return res
+      .status(500)
+      .json({ message: "Error fetching users", error: errMessage });
+  }
+};
+
+export const logoutUser = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    res.clearCookie("authToken");
+
+    return res.status(200).json({ message: "User logged out successfully" });
+  } catch (error: unknown) {
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    return res
+      .status(500)
+      .json({ message: "Error logging out user", error: errMessage });
+  }
+};
