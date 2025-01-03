@@ -1,11 +1,17 @@
 import express, { Request, Response } from "express";
+import dotenv from "dotenv";
+dotenv.config({ path: "./config.env" });
+
 import userRouter from "./routes/userRoutes";
+import connectDB from "./database/connection";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use("/user", userRouter);
+connectDB();
+
+// app.use(express.json());
+// app.use("/user", userRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript Express!");

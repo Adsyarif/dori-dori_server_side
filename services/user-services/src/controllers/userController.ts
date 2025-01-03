@@ -14,10 +14,10 @@ export const registerUser = async (
       return res.status(400).json({ message: "Invalid role provided" });
     }
 
-    // const existingUser = await User.findOne({ email });
-    // if (existingUser) {
-    //   return res.status(400).json({ message: "Email already in use" });
-    // }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
