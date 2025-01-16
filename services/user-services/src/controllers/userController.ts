@@ -5,42 +5,53 @@ import { RequestHandler } from "express";
 // Register a new user
 export const registerUser: RequestHandler = async (req, res) => {
   const { name, email, password, phone, address, role } = req.body;
-  console.log("user register controller");
+
+  console.log("User registration initiated");
 
   try {
+    if (!name || !email || !password || !phone || !address || !role) {
+      res.status(400).json({ message: "All fields are required" });
+      return;
+    }
+
     if (!Object.values(UserRole).includes(role)) {
       res.status(400).json({ message: "Invalid role provided" });
+      return;
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       res.status(400).json({ message: "Email already in use" });
+      return;
     }
 
-    bcrypt.hash(password, 10, async (err, hash) => {
-      if (err) {
-        throw new Error(`Error hashing password: ${err}`);
-      } else {
-        const newUser: IUser = new User({
-          name,
-          email,
-          password: hash,
-          phone,
-          address,
-          role,
-        });
-        await newUser.save();
-        res
-          .status(201)
-          .json({ message: "User registered successfully", user: newUser });
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser: IUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      address,
+      role,
+    });
+
+    await newUser.save();
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: { id: newUser.id, name, email, phone, address, role },
     });
   } catch (error: unknown) {
     const errMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    res
-      .status(500)
-      .json({ message: "Error registering user", error: errMessage });
+
+    console.error("Error registering user:", errMessage);
+
+    res.status(500).json({
+      message: "Error registering user",
+      error: errMessage,
+    });
   }
 };
 
