@@ -1,8 +1,10 @@
+
 // import { RequestHandler } from "express";
 // import jwt from "jsonwebtoken";
 // import { User } from "../models/User";
 
 // export const authenticate: RequestHandler = async (req, res, next) => {
+
 //   const token = req.header("Authorization")?.replace("Bearer ", "");
 
 //   if (!token) {

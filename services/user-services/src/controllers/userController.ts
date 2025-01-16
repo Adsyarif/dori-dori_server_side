@@ -9,10 +9,12 @@ export const registerUser: RequestHandler = async (req, res) => {
   console.log("User registration initiated");
 
   try {
+
     if (!name || !email || !password || !phone || !address || !role) {
       res.status(400).json({ message: "All fields are required" });
       return;
     }
+
 
     if (!Object.values(UserRole).includes(role)) {
       res.status(400).json({ message: "Invalid role provided" });
@@ -87,6 +89,7 @@ export const loginUser: RequestHandler = async (req, res) => {
   }
 };
 
+
 // Get all users (for admin only)
 export const getAllUsers: RequestHandler = async (req, res) => {
   try {
@@ -103,6 +106,7 @@ export const getAllUsers: RequestHandler = async (req, res) => {
 };
 
 // export const logoutUser = async (
+
 //   req: Request,
 //   res: Response
 // ): Promise<Response> => {
@@ -117,5 +121,6 @@ export const getAllUsers: RequestHandler = async (req, res) => {
 //     return res
 //       .status(500)
 //       .json({ message: "Error logging out user", error: errMessage });
+
 //   }
 // };
