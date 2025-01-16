@@ -12,7 +12,6 @@ import { UserRole } from "../models/User";
 import { checkRole } from "../middleware/checkRole";
 
 const userRouter = express.Router();
-userRouter.use(bodyParser.urlencoded({ extended: true }));
 
 userRouter.post("/uc/v1/register", asyncHandler(registerUser));
 userRouter.post("/uc/v1/login", asyncHandler(loginUser));

@@ -11,11 +11,11 @@ const registerUser = async (req, res) => {
     const { name, email, password, phone, address, role } = req.body;
     try {
         if (!Object.values(User_1.UserRole).includes(role)) {
-            return res.status(400).json({ message: "Invalid role provided" });
+            res.status(400).json({ message: "Invalid role provided" });
         }
         const existingUser = await User_1.User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: "Email already in use" });
+            res.status(400).json({ message: "Email already in use" });
         }
         const hashedPassword = await bcryptjs_1.default.hash(password, 10);
         const newUser = new User_1.User({
@@ -27,13 +27,13 @@ const registerUser = async (req, res) => {
             role,
         });
         await newUser.save();
-        return res
+        res
             .status(201)
             .json({ message: "User registered successfully", user: newUser });
     }
     catch (error) {
         const errMessage = error instanceof Error ? error.message : "Unknown error occurred";
-        return res
+        res
             .status(500)
             .json({ message: "Error registering user", error: errMessage });
     }
@@ -45,27 +45,28 @@ const loginUser = async (req, res) => {
     try {
         const user = await User_1.User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            res.status(404).json({ message: "User not found" });
         }
-        const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: "Invalid credentials" });
+        else {
+            const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
+            if (!isPasswordValid) {
+                res.status(401).json({ message: "Invalid credentials" });
+            }
+            const responseData = {
+                message: "Login successful",
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                },
+            };
+            res.status(200).json(responseData);
         }
-        return res.status(200).json({
-            message: "Login successful",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
-        });
     }
     catch (error) {
         const errMessage = error instanceof Error ? error.message : "Unknown error occurred";
-        return res
-            .status(500)
-            .json({ message: "Error logging in", error: errMessage });
+        res.status(500).json({ message: "Error logging in", error: errMessage });
     }
 };
 exports.loginUser = loginUser;

@@ -1,23 +1,19 @@
-import { Request, Response } from "express";
 import { User, IUser, UserRole } from "../models/User";
 import bcrypt from "bcryptjs";
-import axios from "axios";
+import { RequestHandler } from "express";
 
 // Register a new user
-export const registerUser = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+export const registerUser: RequestHandler = async (req, res) => {
   const { name, email, password, phone, address, role } = req.body;
 
   try {
     if (!Object.values(UserRole).includes(role)) {
-      return res.status(400).json({ message: "Invalid role provided" });
+      res.status(400).json({ message: "Invalid role provided" });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already in use" });
+      res.status(400).json({ message: "Email already in use" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,53 +26,49 @@ export const registerUser = async (
       address,
       role,
     });
-
     await newUser.save();
-    return res
+
+    res
       .status(201)
       .json({ message: "User registered successfully", user: newUser });
   } catch (error: unknown) {
     const errMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    return res
+    res
       .status(500)
       .json({ message: "Error registering user", error: errMessage });
   }
 };
 
 // Login a user
-export const loginUser = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+export const loginUser: RequestHandler = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+      res.status(404).json({ message: "User not found" });
+    } else {
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      const responseData = {
+        message: "Login successful",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      };
+      res.status(200).json(responseData);
     }
-
-    return res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
   } catch (error: unknown) {
     const errMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    return res
-      .status(500)
-      .json({ message: "Error logging in", error: errMessage });
+    res.status(500).json({ message: "Error logging in", error: errMessage });
   }
 };
 
