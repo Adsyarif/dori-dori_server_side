@@ -12,7 +12,7 @@ connectDB();
 
 app.use(json());
 userRouter.use(bodyParser.urlencoded({ extended: true }));
-app.use("v1/user", userRouter);
+app.use("/v1/user", userRouter);
 
 app.use((err: Error, _: Request, res: Response, __: NextFunction) => {
   res.status(500).json({ message: err.message });

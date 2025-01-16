@@ -47,7 +47,7 @@ const port = process.env.PORT || 3000;
 (0, connection_1.default)();
 app.use((0, body_parser_1.json)());
 userRoutes_1.default.use(body_parser_1.default.urlencoded({ extended: true }));
-app.use("v1/user", userRoutes_1.default);
+app.use("/v1/user", userRoutes_1.default);
 app.use((err, _, res, __) => {
     res.status(500).json({ message: err.message });
 });
