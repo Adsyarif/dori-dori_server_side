@@ -29,7 +29,14 @@ const AddressSchema: Schema = new Schema<AddressUser>({
   addressLine2: { type: String, trim: true },
   city: { type: String, required: true, trim: true },
   state: { type: String, required: true, trim: true },
-  zip: { type: String, required: true },
+  zip: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v: string) => /^\d{5}(-\d{4})?$/.test(v),
+      message: "Invalid ZIP code format",
+    },
+  },
 });
 
 const UserSchema: Schema = new Schema<IUser>(
@@ -41,6 +48,7 @@ const UserSchema: Schema = new Schema<IUser>(
       unique: true,
       lowercase: true,
       trim: true,
+      match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
     },
     password: { type: String, required: true },
     phone: { type: String, trim: true },

@@ -1,22 +1,30 @@
-import { Request, Response } from "express";
 import { User, IUser, UserRole } from "../models/User";
 import bcrypt from "bcryptjs";
+import { RequestHandler } from "express";
 
 // Register a new user
-export const registerUser = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+export const registerUser: RequestHandler = async (req, res) => {
   const { name, email, password, phone, address, role } = req.body;
 
+  console.log("User registration initiated");
+
   try {
+
+    if (!name || !email || !password || !phone || !address || !role) {
+      res.status(400).json({ message: "All fields are required" });
+      return;
+    }
+
+
     if (!Object.values(UserRole).includes(role)) {
-      return res.status(400).json({ message: "Invalid role provided" });
+      res.status(400).json({ message: "Invalid role provided" });
+      return;
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already in use" });
+      res.status(400).json({ message: "Email already in use" });
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,74 +39,88 @@ export const registerUser = async (
     });
 
     await newUser.save();
-    return res
-      .status(201)
-      .json({ message: "User registered successfully", user: newUser });
-  } catch (error: unknown) {
-    const errMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-    return res
-      .status(500)
-      .json({ message: "Error registering user", error: errMessage });
-  }
-};
 
-// Login a user
-export const loginUser = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  const { email, password } = req.body;
-
-  try {
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Compare passwords
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    return res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+    res.status(201).json({
+      message: "User registered successfully",
+      user: { id: newUser.id, name, email, phone, address, role },
     });
   } catch (error: unknown) {
     const errMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    return res
-      .status(500)
-      .json({ message: "Error logging in", error: errMessage });
+
+    console.error("Error registering user:", errMessage);
+
+    res.status(500).json({
+      message: "Error registering user",
+      error: errMessage,
+    });
   }
 };
 
-// // Get all users (for admin only)
-// export const getAllUsers = async (
+// Login a user
+export const loginUser: RequestHandler = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+    } else {
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const responseData = {
+        message: "Login successful",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      };
+      res.status(200).json(responseData);
+    }
+  } catch (error: unknown) {
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    res.status(500).json({ message: "Error logging in", error: errMessage });
+  }
+};
+
+
+// Get all users (for admin only)
+export const getAllUsers: RequestHandler = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error: unknown) {
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: errMessage });
+  }
+};
+
+// export const logoutUser = async (
+
 //   req: Request,
 //   res: Response
 // ): Promise<Response> => {
 //   try {
-//     // Pastikan req.user ada dan memiliki role
-//     if (!req.user || req.user.role !== UserRole.Admin) {
-//       return res.status(403).json({ message: "Forbidden access" });
-//     }
+//     res.clearCookie("authToken");
 
-//     const users = await User.find();
-//     return res.status(200).json(users);
+//     return res.status(200).json({ message: "User logged out successfully" });
 //   } catch (error: unknown) {
 //     const errMessage =
 //       error instanceof Error ? error.message : "Unknown error occurred";
+
 //     return res
 //       .status(500)
-//       .json({ message: "Error fetching users", error: errMessage });
+//       .json({ message: "Error logging out user", error: errMessage });
+
 //   }
 // };
