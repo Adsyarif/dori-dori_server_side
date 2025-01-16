@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { User, IUser, UserRole } from "../models/User";
 import bcrypt from "bcryptjs";
-import { promises } from "dns";
+import axios from "axios";
 
 // Register a new user
 export const registerUser = async (
@@ -82,14 +82,10 @@ export const loginUser = async (
 
 // Get all users (for admin only)
 export const getAllUsers = async (
-  req: Request & { user?: { role: UserRole } },
+  req: Request,
   res: Response
 ): Promise<Response> => {
   try {
-    if (!req.user || req.user.role !== UserRole.Admin) {
-      return res.status(403).json({ message: "Forbidden access" });
-    }
-
     const users = await User.find();
     return res.status(200).json(users);
   } catch (error: unknown) {
