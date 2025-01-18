@@ -4,11 +4,25 @@ dotenv.config({ path: "./config.env" });
 import userRouter from "./routes/userRoutes";
 import connectDB from "./database/connection";
 import bodyParser, { json } from "body-parser";
+import session from "express-session";
+import { CipherKey } from "crypto";
+import passport from "passport";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 connectDB();
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET as CipherKey | CipherKey[],
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(json());
 userRouter.use(bodyParser.urlencoded({ extended: true }));

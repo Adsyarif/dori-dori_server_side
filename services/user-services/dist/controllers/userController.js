@@ -56,13 +56,15 @@ const loginUser = async (req, res) => {
         const user = await User_1.User.findOne({ email });
         if (!user) {
             res.status(404).json({ message: "User not found" });
+            return;
         }
         else {
             const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
             if (!isPasswordValid) {
                 res.status(401).json({ message: "Invalid credentials" });
+                return;
             }
-            const responseData = {
+            res.status(200).json({
                 message: "Login successful",
                 user: {
                     id: user._id,
@@ -70,8 +72,7 @@ const loginUser = async (req, res) => {
                     email: user.email,
                     role: user.role,
                 },
-            };
-            res.status(200).json(responseData);
+            });
         }
     }
     catch (error) {

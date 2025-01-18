@@ -10,18 +10,18 @@ export const registerUser: RequestHandler = async (req, res) => {
 
   try {
     if (!name || !email || !password || !phone || !address || !role) {
-      res.status(400).json({ message: "All fields are required" });
+      res.status(412).json({ status: 412, message: "All fields are required" });
       return;
     }
 
     if (!Object.values(UserRole).includes(role)) {
-      res.status(400).json({ message: "Invalid role provided" });
+      res.status(412).json({ status: 412, message: "Invalid role provided" });
       return;
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({ message: "Email already in use" });
+      res.status(412).json({ status: 412, message: "Email already in use" });
       return;
     }
 
@@ -63,13 +63,15 @@ export const loginUser: RequestHandler = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       res.status(404).json({ message: "User not found" });
+      return;
     } else {
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         res.status(401).json({ message: "Invalid credentials" });
+        return;
       }
 
-      const responseData = {
+      res.status(200).json({
         message: "Login successful",
         user: {
           id: user._id,
@@ -77,8 +79,7 @@ export const loginUser: RequestHandler = async (req, res) => {
           email: user.email,
           role: user.role,
         },
-      };
-      res.status(200).json(responseData);
+      });
     }
   } catch (error: unknown) {
     const errMessage =

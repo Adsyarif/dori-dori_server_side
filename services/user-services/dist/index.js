@@ -42,9 +42,18 @@ dotenv_1.default.config({ path: "./config.env" });
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const connection_1 = __importDefault(require("./database/connection"));
 const body_parser_1 = __importStar(require("body-parser"));
+const express_session_1 = __importDefault(require("express-session"));
+const passport_1 = __importDefault(require("passport"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 (0, connection_1.default)();
+app.use((0, express_session_1.default)({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+}));
+app.use(passport_1.default.initialize());
+app.use(passport_1.default.session());
 app.use((0, body_parser_1.json)());
 userRoutes_1.default.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use("/v1/user", userRoutes_1.default);
