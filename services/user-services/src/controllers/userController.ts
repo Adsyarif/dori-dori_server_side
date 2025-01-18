@@ -17,6 +17,7 @@ export const getAllUsers: RequestHandler = async (req, res) => {
 };
 
 // export const logoutUser = async (
+
 //   req: Request,
 //   res: Response
 // ): Promise<Response> => {
@@ -31,5 +32,6 @@ export const getAllUsers: RequestHandler = async (req, res) => {
 //     return res
 //       .status(500)
 //       .json({ message: "Error logging out user", error: errMessage });
+
 //   }
 // };
