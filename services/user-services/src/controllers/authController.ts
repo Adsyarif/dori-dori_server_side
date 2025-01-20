@@ -80,3 +80,9 @@ export const loginUser: RequestHandler = (req, res, next) => {
     }
   )(req, res, next);
 };
+
+export const loginWithGoogle: RequestHandler = (req, res) => {
+  passport.authenticate("google", {
+    scope: ["profile", "emaill"],
+  })(req, res);
+};
